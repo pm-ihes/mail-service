@@ -5,10 +5,14 @@ require('dotenv').config();
 module.exports = new class MailController {
 
     async sendMails(data) {
-        const mailToUser = await mailService.sendMail(data.email, data);
-        const mailToBack = await mailService.sendMail(process.env.MAIL_BACK, data);
+        try {
+            const mailToUser = await mailService.sendMail(data.email, data);
+            const mailToBack = await mailService.sendMail(process.env.MAIL_BACK, data);
+        } catch (error) {
+            throw error;
+        }
 
-        return { mailToUser, mailToBack };
+        return { mailToUserId: mailToUser.messageId, mailToBackId: mailToBack.messageId };
     }
 
 };

@@ -1,23 +1,18 @@
 
+const mailService = require('../../services/mail.service');
 require('dotenv').config();
 
-/*module.exports = new class ApplicationController{
-    filenames = [];
+module.exports = class ApplicationController {
 
-    async mailService(data, filenames[0] || null, filenames[1] || null, (info) => {
-        console.log(`the mail has been send and the id is ${info.messageId}`);
-        res.status(200).send(info);
+    async sendMails(data, filename1 = undefined, filename2 = undefined) {
+        try {
+            const mailToUser = await mailService.sendMail(data.email, data);
+            const mailToBack = await mailService.sendMail(process.env.MAIL_BACK, data, filename1, filename2);
 
-        deleteFiles(filenames);
+            return { mailToUserId: mailToUser.messageId, mailToBackId: mailToBack.messageId };
 
-        filenames = [];
-    }).catch(err => {
-        console.log(err);
-        res.status(500).send(err);
-
-        deleteFiles(filenames);
-
-        filenames = [];
-    });
-
-}*/
+        } catch (error) {
+            throw error;
+        }
+    }
+}

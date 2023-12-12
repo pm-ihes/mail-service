@@ -6,9 +6,9 @@ const controller = require('./contact.controller');
 router.post('', (req, res, next) => {
     controller.sendMails(req.body)
         .then((result) => {
-            res.status(200);
+            res.status(200).send(result);
         })
-        .catch((e) => next(e)) 
+        .catch((e) => res.status(500).send(e)); 
 });
 
 

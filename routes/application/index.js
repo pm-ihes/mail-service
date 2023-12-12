@@ -3,7 +3,9 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path'); 
 const multer = require('multer');
-const mailService = require('../../services/mail.service');
+
+const ApplicationController = require('./application.controller')
+const controller = new ApplicationController();
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -27,21 +29,16 @@ let filenames = [];
 router.post('', upload.array('file', 2), (req, res) => {
     let data = req.body;
 
-    mailService.sendMail(data.email, data, filenames[0] || null, filenames[1] || null)
+    controller.sendMails(data, filenames[0] || null, filenames[1] || null)
         .then((result) => {
-            console.log(`mail sent`);
-            res.status(200);
+            res.status(200).send(result);
             deleteFiles(filenames);
-
-            filenames = [];
+            filenames  = [];
         })
         .catch((e) => {
-            console.log(e);
-            res.status(500).send(e);
-    
+            res.status(400).send(e);
             deleteFiles(filenames);
-    
-            filenames = [];
+            filenames  = [];
         });
 });
 
