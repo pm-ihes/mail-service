@@ -1,42 +1,49 @@
 const nodemailer = require('nodemailer');
+require('dotenv').config();
 
-const sendMail = async function (data, file1=null, file2=null, callback) {
+class MailService{
 
-    let transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false,
-        auth: {
-            user: 'mislerpa01@gmail.com',
-            pass: 'pvjh grim ojxh dgzv'
+    async sendMail (mailTo, data, file1=null, file2=null) {
+
+        if(!data.name){
+            data.name = `${data.firstname} ${data.lastname}`;
         }
-    });
 
-    let mailOptions = {
-        from: "test",
-        to: data.email,
-        subject: 'Test Kontaktformular',
-        html: `<h1>Hallo ${data.name}<h1>`,
-        attachments: []
-    };
-
-    //Lebenslauf?
-    if(file1) {
-        mailOptions.attachments.push({   
-            path: process.cwd() + "/files/" + file1
+        let transporter = nodemailer.createTransport({
+            host: process.env.MAIL_HOST,
+            port: 587,
+            secure: false,
+            auth: {
+                user: process.env.MAIL_USER,
+                pass: process.env.MAIL_PASS
+            }
         });
-    };
 
-    if(file2) {
-        mailOptions.attachments.push({   
-            path: process.cwd() + "/files/" + file2
-        });
+        let mailOptions = {
+            from: "test",
+            to: mailTo,
+            subject: 'Test Kontaktformular',
+            html: `<h1>Hallo ${data.name}<h1>`,
+            attachments: []
+        };
+
+        //Lebenslauf?
+        if(file1) {
+            mailOptions.attachments.push({   
+                path: process.cwd() + "/files/" + file1
+            });
+        };
+
+        if(file2) {
+            mailOptions.attachments.push({   
+                path: process.cwd() + "/files/" + file2
+            });
+        }
+
+        let info = await transporter.sendMail(mailOptions);
+
+        return info;
     }
-
-    let info = await transporter.sendMail(mailOptions);
-
-    callback(info);
-
 }
 
-module.exports = sendMail;
+module.exports = new MailService;

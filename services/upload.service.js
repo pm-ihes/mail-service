@@ -1,26 +1,25 @@
+const fs = require('fs');
+const path = require('path'); 
 const multer = require('multer');
-const path = require('path');
 
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'files')
+    destination: function (req, file, cb) {
+        cb(null, 'files');
     },
-    filename: (req, file, cb) => {
-        cb(null, 'Test' + path.extname(file.originalname))
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = file.mimetype.split("/")[1];
+        const filename = file.fieldname + '-' + uniqueSuffix + "." + ext;
+        cb(null, filename);
+        console.log(`Hochgeladen: ${filename}`);
+        filenames.push(filename);
     }
 });
 
-const upload = multer({storage: storage});
+const upload = multer({ storage: storage });
 
-
-const handeUpload = function(req, res){
-
-    if(req.file){
-        upload.single("file");
-        console.log("Vorhanden");
-    }
-
-
+function fileUpload(req, res) {
+    upload.array('file', 2)
 }
 
-module.exports = handeUpload;
+module.exports = fileUpload;

@@ -1,9 +1,10 @@
+const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path'); 
 const multer = require('multer');
+const mailService = require('../../services/mail.service');
 
-const upload = multer({ storage: storage });
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'files');
@@ -18,34 +19,37 @@ const storage = multer.diskStorage({
     }
 });
 
+const upload = multer({ storage: storage });
+
 let filenames = [];
 
 
-router.post('/upload', upload.array('file', 2), (req, res) => {
+router.post('', upload.array('file', 2), (req, res) => {
     let data = req.body;
 
-    mailService(data, filenames[0] || null, filenames[1] || null, (info) => {
-        console.log(`the mail has been send and the id is ${info.messageId}`);
-        res.status(200).send(info);
+    mailService.sendMail(data.email, data, filenames[0] || null, filenames[1] || null)
+        .then((result) => {
+            console.log(`mail sent`);
+            res.status(200);
+            deleteFiles(filenames);
 
-        deleteFiles(filenames);
-
-        filenames = [];
-    }).catch(err => {
-        console.log(err);
-        res.status(500).send(err);
-
-        deleteFiles(filenames);
-
-        filenames = [];
-    });
+            filenames = [];
+        })
+        .catch((e) => {
+            console.log(e);
+            res.status(500).send(e);
+    
+            deleteFiles(filenames);
+    
+            filenames = [];
+        });
 });
 
 
 //Hochgeladene Dateien löschen
 function deleteFiles(filenames){
     filenames.forEach(filename => {
-        fs.unlink(`${__dirname}/../files/${filename}`, (err) => {
+        fs.unlink(`${__dirname}/../../files/${filename}`, (err) => {
             if (err) {
                 console.log(`Fehler beim Löschen der Datei: ${filename}`);
                 console.log(err);
@@ -57,4 +61,7 @@ function deleteFiles(filenames){
 }
 
 
-module.exports = router;
+module.exports = {
+    path: '/application',
+    router
+};
